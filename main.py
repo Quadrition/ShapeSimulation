@@ -1,6 +1,5 @@
 import pygame
 from polygon import Polygon
-import math
 from vector import Vector
 import numpy as np
 from runge_kutta import runge_kutta_4
@@ -35,30 +34,24 @@ def main():
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     run = True
-    polygon = Polygon(np.array([50, 50]), 10, 4, 1)
+    polygon = Polygon(np.array([50, 50]), 10, 4, 10)
     while run:
 
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_LEFT]:
-            polygon.force[0] = 500
-            polygon.angles[0] = math.pi
+            polygon.FORCE[0] = -500
         elif keys[pygame.K_RIGHT]:
-            polygon.force[0] = 500
-            polygon.angles[0] = 0
+            polygon.FORCE[0] = 500
         else:
-            polygon.force[0] = 0
-            polygon.angles[0] = 0#.5 * math.pi
+            polygon.FORCE[0] = 0
 
         if keys[pygame.K_UP]:
-            polygon.force[1] = 500
-            polygon.angles[1] = -0.5 * math.pi
+            polygon.FORCE[1] = -500
         elif keys[pygame.K_DOWN]:
-            polygon.force[1] = 500
-            polygon.angles[1] = 0.5 * math.pi
+            polygon.FORCE[1] = 500
         else:
-            polygon.force[1] = 0
-            polygon.angles[1] = 0
+            polygon.FORCE[1] = 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
