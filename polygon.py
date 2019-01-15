@@ -7,6 +7,7 @@ from runge_kutta import runge_kutta_4
 
 
 class Polygon():
+    FORCE = np.array([0, 0])
     C = 3
 
     def __init__(self, centroid, radius, degree, mass, color=(255, 0, 0)):
@@ -15,10 +16,9 @@ class Polygon():
         self.mass = mass
         self.reference_vertex = Vector(0, -radius)
         self.color = color
-        self.speed = np.array([0., 0.])
+        self.speed = np.array([0, 0])
         self.time = pygame.time.get_ticks()
-        self.angles = np.array([0., 0.])
-        self.force = np.array([0., 0.])
+        self.angles = np.array([0, 0]);
 
     def get_vertices(self):
         radians = 2 * math.pi / self.degree
@@ -35,9 +35,7 @@ class Polygon():
         pygame.draw.polygon(win, self.color, self.get_vertices())
 
     def fun(self, t, y):
-        theta = (self.angles[0] + self.angles[1])
-        print ": ", math.cos(theta)#self.force[0]#y[1][0]#math.cos(theta) * self.force[0] - self.C * y[1][0]#)/self.mass, (math.sin(theta) * self.force[1] - self.C * y[1][1])
-        return np.array([y[1], (np.array([math.cos(theta) * self.force[0], math.sin(theta) * self.force[1]]) - y[1] * self.C) / self.mass])#np.array([(math.cos(theta) * self.force[0] - self.C * y[1][0])/self.mass, (math.sin(theta) * self.force[1] - self.C * y[1][1])/self.mass])]) #((math.cos(theta) * self.force[0] + math.sin(theta) * self.force[1]) - self.C * y[1]) / self.mass])
+        return np.array([y[1], (self.FORCE - self.C * y[1])])
 
     def move(self, dt):
         self.start = np.array([self.centroid, self.speed])
@@ -48,7 +46,8 @@ class Polygon():
 
         self.centroid = y[0]
         self.speed = y[1]
+        print self.centroid, self.speed
 
     def update(self, dt):
         self.move(dt)
-        self.rotate(-2 * math.pi * dt * 0.001)
+        self.rotate(2 * math.pi * dt * 0.001)
