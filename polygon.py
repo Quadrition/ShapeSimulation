@@ -1,5 +1,3 @@
-from vector import Vector
-import math
 import pygame
 import numpy as np
 from runge_kutta import runge_kutta_4
@@ -12,30 +10,37 @@ class Polygon():
 
     def __init__(self, centroid, radius, degree, mass, color=(255, 0, 0)):
         self.centroid = centroid
+        self.radius = radius
         self.degree = degree
         self.mass = mass
-        self.reference_vertex = Vector(0, -radius)
         self.color = color
+        self.reference_vector = np.array([0, -self.radius])
         self.speed = np.array([0, 0])
         self.time = pygame.time.get_ticks()
-        self.angles = np.array([0, 0]);
+        self.angles = np.array([0, 0])
 
+    @staticmethod
+    def rotate_vector(self, vector, radians):
+        return vector * np.matrix([[np.cos(radians), -np.sin(radians)], [np.sin(radians), np.cos(radians)]])
+
+    @property
     def get_vertices(self):
-        radians = 2 * math.pi / self.degree
-        vertices = [(Vector(self.centroid[0], self.centroid[1]) + self.reference_vertex).get_tuple()]
+        theta = -2 * np.pi / self.degree
+        reference_vector = self.reference_vector
+        vertices = [tuple((self.centroid + reference_vector).tolist())]
         for i in range(1, self.degree):
-            self.reference_vertex = self.reference_vertex.rotate(radians)
-            vertices.append((Vector(self.centroid[0], self.centroid[1]) + self.reference_vertex).get_tuple())
+            reference_vector = self.rotate_vector(reference_vector, theta)
+            vertices.append(tuple((self.centroid + reference_vector).tolist()))
         return vertices
 
-    def rotate(self, radians):
-        self.reference_vertex = self.reference_vertex.rotate(radians)
-
     def draw(self, win):
-        pygame.draw.polygon(win, self.color, self.get_vertices())
+        pygame.draw.polygon(win, self.color, self.get_vertices)
 
     def fun(self, t, y):
         return np.array([y[1], (self.FORCE - self.C * y[1])])
+
+    def rotate(self, radians):
+        self.reference_vector = self.rotate_vector(self.reference_vector, radians)
 
     def move(self, dt):
         self.start = np.array([self.centroid, self.speed])

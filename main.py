@@ -1,6 +1,5 @@
 import pygame
 from polygon import Polygon
-from vector import Vector
 import numpy as np
 from runge_kutta import runge_kutta_4
 from math import sin
@@ -67,8 +66,9 @@ def fun(y):
 
 
 if __name__ == '__main__':
-    main()
-
+    # main()
+    polygon = Polygon(np.array([100, 100]), 50, 4, 1)
+    print polygon.get_vertices()
     # print runge_kutta_4_step(fun, 0.01, [10, 50])
     # y = [1, 1]
     # Y =[[], []]
