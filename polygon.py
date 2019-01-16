@@ -1,9 +1,7 @@
-from vector import Vector
 import math
 import pygame
 import numpy as np
 from runge_kutta import runge_kutta_4
-
 
 
 class Polygon():
@@ -14,22 +12,32 @@ class Polygon():
         self.centroid = centroid
         self.degree = degree
         self.mass = mass
-        self.reference_vertex = Vector(0, -radius)
+        self.reference_vector = np.array([0, -radius])
         self.color = color
         self.speed = np.array([0, 0])
         self.time = pygame.time.get_ticks()
-        self.angles = np.array([0, 0]);
+        self.angles = np.array([0, 0])
+
+    def rotate_reference_vector(self, theta):
+        self.reference_vector = self.reference_vector * np.matrix(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+
+    @property
+    def theta(self):
+        return 2 * math.pi / self.degree
 
     def get_vertices(self):
-        radians = 2 * math.pi / self.degree
-        vertices = [(Vector(self.centroid[0], self.centroid[1]) + self.reference_vertex).get_tuple()]
+        theta = self.theta
+        vertices = [tuple((self.centroid + self.reference_vector).tolist())]
         for i in range(1, self.degree):
-            self.reference_vertex = self.reference_vertex.rotate(radians)
-            vertices.append((Vector(self.centroid[0], self.centroid[1]) + self.reference_vertex).get_tuple())
+            self.rotate_reference_vector(theta)
+            vertices.append(tuple((self.centroid + self.reference_vector).tolist()))
+        self.rotate_reference_vector(theta)
         return vertices
 
-    def rotate(self, radians):
-        self.reference_vertex = self.reference_vertex.rotate(radians)
+    def rotate(self, theta):
+        self.reference_vector = self.reference_vector * np.matrix(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
 
     def draw(self, win):
         pygame.draw.polygon(win, self.color, self.get_vertices())
@@ -43,7 +51,6 @@ class Polygon():
         y = runge_kutta_4(self.fun, dt * 0.001, self.start, self.time * 0.001)
         self.time = t
         self.start = y
-
         self.centroid = y[0]
         self.speed = y[1]
         print self.centroid, self.speed

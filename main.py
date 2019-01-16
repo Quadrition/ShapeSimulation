@@ -1,6 +1,5 @@
 import pygame
 from polygon import Polygon
-from vector import Vector
 import numpy as np
 from runge_kutta import runge_kutta_4
 from math import sin
