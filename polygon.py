@@ -5,7 +5,6 @@ from runge_kutta import runge_kutta_4
 
 
 class Polygon():
-    FORCE = np.array([0, 0])
     C = 3
 
     def __init__(self, centroid, radius, degree, mass, color=(255, 0, 0)):
@@ -17,6 +16,7 @@ class Polygon():
         self.speed = np.array([0, 0])
         self.time = pygame.time.get_ticks()
         self.angles = np.array([0, 0])
+        self.forces = np.array([np.array([0., 0.]), np.array([0., 0.])])
 
     def rotate_reference_vector(self, theta):
         self.reference_vector = self.reference_vector * np.matrix(
@@ -43,7 +43,10 @@ class Polygon():
         pygame.draw.polygon(win, self.color, self.get_vertices())
 
     def fun(self, t, y):
-        return np.array([y[1], (self.FORCE - self.C * y[1])])
+        force = np.array([0, 0])
+        for f in self.forces:
+            force = force + f
+        return np.array([y[1], (force - self.C * y[1]) / self.mass])
 
     def move(self, dt):
         self.start = np.array([self.centroid, self.speed])

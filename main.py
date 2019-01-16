@@ -39,18 +39,22 @@ def main():
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_LEFT]:
-            polygon.FORCE[0] = -500
+            polygon.forces[0] = np.array([-500., 0])
         elif keys[pygame.K_RIGHT]:
-            polygon.FORCE[0] = 500
+            polygon.forces[0] = np.array([500., 0.])
         else:
-            polygon.FORCE[0] = 0
+            polygon.forces[0] = np.array([0., 0.])
 
         if keys[pygame.K_UP]:
-            polygon.FORCE[1] = -500
+            polygon.forces[1] = np.array([0., -500.])
         elif keys[pygame.K_DOWN]:
-            polygon.FORCE[1] = 500
+            polygon.forces[1] = np.array([0, 500.])
         else:
-            polygon.FORCE[1] = 0
+            polygon.forces[1] = np.array([0., 0.])
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
