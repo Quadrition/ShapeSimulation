@@ -4,7 +4,7 @@ import numpy as np
 from runge_kutta import runge_kutta_4
 
 
-class Polygon():
+class Polygon:
     C = 3
 
     def __init__(self, centroid, radius, degree, mass, color=(255, 0, 0)):
@@ -19,19 +19,20 @@ class Polygon():
         self.forces = np.array([np.array([0., 0.]), np.array([0., 0.])])
 
     def rotate_reference_vector(self, theta):
-        self.reference_vector = self.reference_vector * np.matrix(
-            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+        self.reference_vector = np.array(self.reference_vector * np.matrix(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])).ravel()
 
     @property
     def theta(self):
         return 2 * math.pi / self.degree
 
-    def get_vertices(self):
+    @property
+    def vertices(self):
         theta = self.theta
-        vertices = [tuple((self.centroid + self.reference_vector).tolist())]
+        vertices = [self.centroid + self.reference_vector]
         for i in range(1, self.degree):
             self.rotate_reference_vector(theta)
-            vertices.append(tuple((self.centroid + self.reference_vector).tolist()))
+            vertices.append(self.centroid + self.reference_vector)
         self.rotate_reference_vector(theta)
         return vertices
 
@@ -40,7 +41,7 @@ class Polygon():
             [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
 
     def draw(self, win):
-        pygame.draw.polygon(win, self.color, self.get_vertices())
+        pygame.draw.polygon(win, self.color, self.vertices)
 
     def fun(self, t, y):
         force = np.array([0, 0])
@@ -56,8 +57,8 @@ class Polygon():
         self.start = y
         self.centroid = y[0]
         self.speed = y[1]
-        print self.centroid, self.speed
+        # print self.forces
 
     def update(self, dt):
         self.move(dt)
-        self.rotate(2 * math.pi * dt * 0.001)
+        #self.rotate(2 * math.pi * dt * 0.001)
