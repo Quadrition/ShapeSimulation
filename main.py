@@ -3,13 +3,15 @@ from polygon import Polygon
 import numpy as np
 from runge_kutta import runge_kutta_4
 from math import sin
+from separating_axis_theorem import check_shapes_collision
+from circle import Circle
 
 import matplotlib.pyplot
 
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-FPS = 60
+FPS = 200
 MAX_FRAME_TIME = 6 * 1000 / FPS
 
 def update(time, poly):
@@ -17,10 +19,11 @@ def update(time, poly):
     pygame.display.update()
 
 
-def draw(window, polygon):
+def draw(window, polygon, second):
 
     window.fill((0, 0, 0))
     polygon.draw(window)
+    second.draw(window)
 
 
 # def fun(y, t):
@@ -33,7 +36,11 @@ def main():
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     run = True
-    polygon = Polygon(np.array([50, 50]), 10, 4, 10)
+
+    polygon = Polygon(np.array([800, 500]), 100, 6, 10)
+    second = Polygon(np.array([1000, 500]), 100, 7, 10)
+    polygon.rotate(np.pi / 4)
+    second.rotate(np.pi / 4)
     while run:
 
         keys = pygame.key.get_pressed()
@@ -56,14 +63,19 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-
         clock.tick(FPS)
         elapsed_time = clock.get_time()
-        draw(window, polygon)
+        draw(window, polygon, second)
+
+        result = check_shapes_collision(polygon, second)
+        if result is not None:
+            circle = Polygon(result, 3, 20, 3, color=(0, 255, 0))
+            circle.draw(window)
+
         update(elapsed_time, polygon)
+
+
+
 
 def fun(y):
     return [y[1], (0 - 0 * y[1])/20]
@@ -71,7 +83,11 @@ def fun(y):
 
 if __name__ == '__main__':
     main()
-
+    #axis = np.array([-0.7071067811871176, 0.7071067811859774])
+    #print round(5.49, 0)
+    # vertex = np.array([50, 50])
+    # second = np.array([52, 49])
+    # print (vertex <= second).all()
     # print runge_kutta_4_step(fun, 0.01, [10, 50])
     # y = [1, 1]
     # Y =[[], []]

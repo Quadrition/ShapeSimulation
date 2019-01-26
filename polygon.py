@@ -2,6 +2,7 @@ import math
 import pygame
 import numpy as np
 from runge_kutta import runge_kutta_4
+from projection import Projection
 
 
 class Polygon:
@@ -41,7 +42,10 @@ class Polygon:
             [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
 
     def draw(self, win):
-        pygame.draw.polygon(win, self.color, self.vertices)
+        vertices = self.vertices
+        for i in range(len(vertices)):
+            vertices[i] = tuple(vertices[i].tolist())
+        pygame.draw.polygon(win, self.color, vertices)
 
     def fun(self, t, y):
         force = np.array([0, 0])
@@ -61,4 +65,4 @@ class Polygon:
 
     def update(self, dt):
         self.move(dt)
-        #self.rotate(2 * math.pi * dt * 0.001)
+        # self.rotate(2 * math.pi * dt * 0.005)
