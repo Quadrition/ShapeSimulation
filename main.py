@@ -4,6 +4,8 @@ import numpy as np
 from runge_kutta import runge_kutta_4
 from math import sin
 from separating_axis_theorem import check_shapes_collision
+import globals
+from inputs import Inputs
 from circle import Circle
 
 import matplotlib.pyplot
@@ -14,16 +16,20 @@ SCREEN_HEIGHT = 720
 FPS = 200
 MAX_FRAME_TIME = 6 * 1000 / FPS
 
-def update(time, poly):
-    poly.update(time)
+def update(time, poly, input):
+    input.update()
+    #poly.update(time)
+    for p in poly:
+        p.update(time)
     pygame.display.update()
 
 
-def draw(window, polygon, second):
+def draw(window, polygon):
 
     window.fill((0, 0, 0))
-    polygon.draw(window)
-    second.draw(window)
+    for p in polygon:
+        p.draw(window)
+    #polygon.draw(window)
 
 
 # def fun(y, t):
@@ -32,47 +38,49 @@ def draw(window, polygon, second):
 
 def main():
     pygame.init()
-    pygame.display.set_caption('Simulation')
-    window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    window = pygame.display.set_mode((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+    input = Inputs()
+    globals.RUN = True
     clock = pygame.time.Clock()
-    run = True
+    globals.RUN = True
 
-    polygon = Polygon(np.array([800, 500]), 100, 6, 10)
-    second = Polygon(np.array([1000, 500]), 100, 7, 10)
+    polygon = Polygon(np.array([800, 500]), 100, 6, 100.)
+    second = Polygon(np.array([1000, 500]), 100, 7, 100.)
     polygon.rotate(np.pi / 4)
     second.rotate(np.pi / 4)
-    while run:
+    while globals.RUN:
 
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_LEFT]:
-            polygon.forces[0] = np.array([-1000., 0])
-        elif keys[pygame.K_RIGHT]:
-            polygon.forces[0] = np.array([1000., 0.])
-        else:
-            polygon.forces[0] = np.array([0., 0.])
-
-        if keys[pygame.K_UP]:
-            polygon.forces[1] = np.array([0., -1000.])
-        elif keys[pygame.K_DOWN]:
-            polygon.forces[1] = np.array([0, 1000.])
-        else:
-            polygon.forces[1] = np.array([0., 0.])
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-
-        clock.tick(FPS)
-        elapsed_time = clock.get_time()
-        draw(window, polygon, second)
-
+        polygons = [polygon, second]
         result = check_shapes_collision(polygon, second)
+
+        second.add_force(np.array([np.array([-100., 0.]), second.centroid]))
+
+        if input.get_cw() == True:
+            polygon.add_force(np.array([second.forces[1][0], result]))
+            second.add_force(np.array([polygon.forces[1][0], result]))
+
+        if input.get_left():
+            #polygon.translational_forces[0] = polygon.translational_forces[0] + np.array([-1000., 0.])
+            polygon.add_force(np.array([np.array([-1000., 0.]), polygon.centroid]))
+        elif input.get_right():
+            #polygon.translational_forces[0] = polygon.translational_forces[0] + np.array([1000., 0.])
+            polygon.add_force(np.array([np.array([1000., 0.]), polygon.centroid]))
+
+        if input.get_up():
+            #polygon.translational_forces[1] = np.array([0., -1000.])
+            polygon.add_force(np.array([np.array([0., -1000.]), polygon.centroid]))
+        elif input.get_down():
+            #polygon.translational_forces[1] = np.array([0., 1000.])
+            polygon.add_force(np.array([np.array([0., 1000.]), polygon.centroid]))
+
+
+        clock.tick(globals.FPS)
+        elapsed_time = clock.get_time()
+        draw(window, polygons)
         if result is not None:
             circle = Polygon(result, 3, 20, 3, color=(0, 255, 0))
             circle.draw(window)
-
-        update(elapsed_time, polygon)
+        update(elapsed_time, polygons, input)
 
 
 

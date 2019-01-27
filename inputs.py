@@ -40,7 +40,7 @@ class Inputs:
                 if event.key == pygame.K_DOWN and self.movement_keys[3] == False :
                     self.movement_keys[3] = True
                 # ROTATE CW
-                if event.key == pygame.K_0 and self.rotate_keys[0] == False:
+                if event.key == pygame.K_k and self.rotate_keys[0] == False:
                     self.rotate_keys[0] = True
 
             if event.type == pygame.KEYUP:
@@ -54,5 +54,5 @@ class Inputs:
                 if event.key == pygame.K_DOWN and self.movement_keys[3] == True:
                     self.movement_keys[3] = False
                 # ROTATE CW
-                if event.key == pygame.K_0 and self.rotate_keys[0] == True:
+                if event.key == pygame.K_k and self.rotate_keys[0] == True:
                     self.rotate_keys[0] = False
