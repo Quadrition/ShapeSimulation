@@ -2,22 +2,31 @@ import math
 import pygame
 import numpy as np
 from runge_kutta import runge_kutta_4
-from projection import Projection
 
 
 class Polygon:
     C = 3
 
     def __init__(self, centroid, radius, degree, mass, color=(255, 0, 0)):
+        # Basic attributes
         self.centroid = centroid
         self.degree = degree
-        self.mass = mass
+        self.radius = radius
         self.reference_vector = np.array([0, -radius])
         self.color = color
-        self.speed = np.array([0, 0])
         self.time = pygame.time.get_ticks()
-        self.angles = np.array([0, 0])
+
+        # Physics
         self.forces = np.array([np.array([0., 0.]), np.array([0., 0.])])
+        self.mass = mass
+
+        # Translation
+        self.translational_forces = np.array([np.array([0., 0.]), np.array([0., 0.])])
+        self.translational_speed = np.array([0., 0.])
+        # Rotation
+        self.torques = np.array([0.])
+        self.rotational_speed = np.array([0.])
+        self.moment_area = (math.pi / 4.) * self.radius #jer je 2D telo, pa nema masu, korisceno za krug, jer poligon kako raste stepen, tezi krugu
 
     def rotate_reference_vector(self, theta):
         self.reference_vector = np.array(self.reference_vector * np.matrix(
@@ -47,22 +56,52 @@ class Polygon:
             vertices[i] = tuple(vertices[i].tolist())
         pygame.draw.polygon(win, self.color, vertices)
 
-    def fun(self, t, y):
+    # Calculates how much the polygon should move (translation)(
+    def movement_function(self, t, y):
         force = np.array([0, 0])
-        for f in self.forces:
+        for f in self.translational_forces:
             force = force + f
         return np.array([y[1], (force - self.C * y[1]) / self.mass])
 
+    # Calculates how much the polygon should rotate
+    def rotation_function(self, t, y):
+        torque = np.array([0, 0])
+        for f in self.torques:
+            torque = torque + f
+        return np.array([y[1], (torque - self.C * y[1]) / self.moment_area])
+
+    # Adds a force acting on the polygon and calculates torque and translational force
+    def add_force(self, force):
+        f = force[0] + force[1]
+        point = force[2]
+        moment_arm = point - self.centroid
+        f_parallel = moment_arm * (np.dot(f, moment_arm) / np.dot(moment_arm, moment_arm))
+        f_angular = f - f_parallel
+        theta = math.atan(f_angular[1] / f_angular[0])
+        torque = np.linalg(moment_arm) * np.linalg.norm(f_angular) * math.sin(theta)
+        self.torques = np.concatenate(self.torques, torque)
+        self.translational_forces = np.concatenate(self.translational_forces, f_parallel)
+        #self.forces = np.concatenate((self.forces, force))
+
+    # Clears all forces acting on the polygon
+    def clear_forces(self):
+        #self.forces = np.delete(self.forces, np.s_[2::], axis = 0)
+        self.torques = np.array([0.])
+        self.translational_forces = np.delete(self.translational_forces, np.s_[2::], axis = 0)
+
     def move(self, dt):
-        self.start = np.array([self.centroid, self.speed])
+        self.start = np.array([self.centroid, self.translational_speed])
         t = self.time * 0.001 + dt * 0.001
-        y = runge_kutta_4(self.fun, dt * 0.001, self.start, self.time * 0.001)
+        y = runge_kutta_4(self.movement_function, dt * 0.001, self.start, self.time * 0.001)
         self.time = t
         self.start = y
         self.centroid = y[0]
-        self.speed = y[1]
-        # print self.forces
+        self.translational_speed = y[1]
+
+        #self.add_force(np.array([np.array([10000.,0.]),np.array([0.,1324.])]))
+        self.clear_forces()
 
     def update(self, dt):
         self.move(dt)
-        # self.rotate(2 * math.pi * dt * 0.005)
+        print self.torques
+        #self.rotate(math.pi * dt * 0.001)
