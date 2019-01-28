@@ -10,12 +10,6 @@ from circle import Circle
 
 import matplotlib.pyplot
 
-
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-FPS = 200
-MAX_FRAME_TIME = 6 * 1000 / FPS
-
 def update(time, poly, input):
     input.update()
     #poly.update(time)
@@ -44,34 +38,51 @@ def main():
     clock = pygame.time.Clock()
     globals.RUN = True
 
-    polygon = Polygon(np.array([800, 500]), 100, 6, 100.)
+    polygon = Polygon(np.array([800, 500]), 100, 6, 1.)
     second = Polygon(np.array([1000, 500]), 100, 7, 100.)
     polygon.rotate(np.pi / 4)
     second.rotate(np.pi / 4)
     while globals.RUN:
 
         polygons = [polygon, second]
-        result = check_shapes_collision(polygon, second)
+        collision = check_shapes_collision(polygon, second)
+        result = collision[0] if collision is not None else None
+        mtv = collision[1] if collision is not None else None
+        draw(window, polygons)
 
-        second.add_force(np.array([np.array([-100., 0.]), second.centroid]))
+        if result is not None:
+            e = 1.5
+            vab = polygon.translational_speed - second.translational_speed
+            rap = result - polygon.centroid
+            rap = np.array([-rap[1], rap[0]])
+            rbp = result - second.centroid
+            rbp = np.array([-rbp[1], rbp[0]])
+            ia = polygon.moment_area
+            ib = second.moment_area
+            a = np.dot(rap, mtv)
+            b = np.dot(rbp, mtv)
 
-        if input.get_cw() == True:
-            polygon.add_force(np.array([second.forces[1][0], result]))
-            second.add_force(np.array([polygon.forces[1][0], result]))
+            j = (-(1. + e) * vab * mtv) / (
+                        np.dot(mtv, mtv) * (1 / polygon.mass + 1 / second.mass))  # + pow(a,2) / ia + pow(b,2) / ib)
+            polygon.translational_speed = polygon.translational_speed + (j / polygon.mass) * mtv
+            second.translational_speed = second.translational_speed - (j / second.mass) * mtv
+            # polygon.rotational_speed = polygon.rotational_speed + (np.dot(rap, j*mtv)) / ia
+            # second.rotational_speed = second.rotational_speed - (np.dot(rbp, j*mtv)) / ib
+
+        polygon.rotate_reference_vector(0)
+        #
+        if input.get_cw():
+            polygon.add_force(np.array([-100., 1.]), polygon.reference_vector + polygon.centroid)
 
         if input.get_left():
-            #polygon.translational_forces[0] = polygon.translational_forces[0] + np.array([-1000., 0.])
-            polygon.add_force(np.array([np.array([-1000., 0.]), polygon.centroid]))
+            polygon.add_force(np.array([-1000., 0.]), polygon.centroid)
         elif input.get_right():
-            #polygon.translational_forces[0] = polygon.translational_forces[0] + np.array([1000., 0.])
-            polygon.add_force(np.array([np.array([1000., 0.]), polygon.centroid]))
+            polygon.add_force(np.array([1000., 0.]), polygon.centroid)
 
         if input.get_up():
-            #polygon.translational_forces[1] = np.array([0., -1000.])
-            polygon.add_force(np.array([np.array([0., -1000.]), polygon.centroid]))
+            polygon.add_force(np.array([0., -1000.]), polygon.centroid)
         elif input.get_down():
-            #polygon.translational_forces[1] = np.array([0., 1000.])
-            polygon.add_force(np.array([np.array([0., 1000.]), polygon.centroid]))
+            polygon.add_force(np.array([0., 1000.]), polygon.centroid)
 
 
         clock.tick(globals.FPS)
@@ -80,6 +91,9 @@ def main():
         if result is not None:
             circle = Polygon(result, 3, 20, 3, color=(0, 255, 0))
             circle.draw(window)
+
+        circle = Polygon(polygon.reference_vector + polygon.centroid, 3, 20, 3, color = (0, 255, 0))
+        circle.draw(window)
         update(elapsed_time, polygons, input)
 
 

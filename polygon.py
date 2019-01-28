@@ -27,7 +27,7 @@ class Polygon:
         # Rotation
         self.angle = 0.
         self.torques = np.array([0.])
-        self.rotational_speed = np.array([0.])
+        self.rotational_speed = 0.
         self.moment_area = (math.pi / 4.) * self.radius #jer je 2D telo, pa nema masu, korisceno za krug, jer poligon kako raste stepen, tezi krugu
 
     def rotate_reference_vector(self, theta):
@@ -73,20 +73,19 @@ class Polygon:
         return np.array([y[1], (torque - self.RC * y[1]) / self.moment_area])
 
     # Adds a force acting on the polygon and calculates torque and translational force
-    def add_force(self, force):
+    def add_force(self, force, point):
         #f = force[0] + force[1]
-        if force[1] is None:
+        if point is None:
             self.torques = np.append(self.torques, 0.)
             self.translational_forces = np.vstack([self.translational_forces, np.array([0., 0.])])
             self.forces = np.vstack((self.forces, np.array([np.array([0., 0.]), 0.])))
             return
-        f = force[0]
-        point = force[1]
+        f = force
         moment_arm = point - self.centroid
-        f_parallel = ((moment_arm * (np.dot(f, moment_arm) / np.dot(moment_arm, moment_arm))) if np.dot(moment_arm, moment_arm) !=  0 else force[0])
+        f_parallel = ((moment_arm * (np.dot(f, moment_arm) / np.dot(moment_arm, moment_arm))) if np.dot(moment_arm, moment_arm) !=  0 else force)
         f_angular = f - f_parallel
-        theta = math.atan(f_angular[1] / f_angular[0])  if f_angular[0] != 0 else math.pi
-        torque = np.linalg.norm(moment_arm) * np.linalg.norm(f_angular) * math.sin(theta)
+        theta_p = math.atan(f_angular[1] / f_angular[0])  if f_angular[0] != 0 else (math.pi if f_angular[1] > 0 else -math.pi)
+        torque = np.linalg.norm(moment_arm) * np.linalg.norm(f_angular) * math.sin(theta_p)
         self.torques = np.append(self.torques, torque)
         self.translational_forces = np.vstack([self.translational_forces, f_parallel])
         self.forces = np.vstack((self.forces, np.array([f_parallel, torque])))
@@ -99,22 +98,26 @@ class Polygon:
         self.translational_forces = np.delete(self.translational_forces, np.s_[1::], axis = 0)
         self.forces = np.array([np.array([0., 0.]), 0.])
 
+    def get_forces(self):
+        force = np.array([self.translational_speed, self.torques])
+        return force
+
+
     def move(self, dt):
         self.start_position = np.array([self.centroid, self.translational_speed])
         self.start_angle = np.array([self.angle, self.rotational_speed])
         t = self.time * 0.001 + dt * 0.001
         y = runge_kutta_4(self.movement_function, dt * 0.001, self.start_position, self.time * 0.001)
-        theta = runge_kutta_4(self.rotation_function, dt * 0.001, self.start_angle, self.time * 0.001)
+        theta_p = runge_kutta_4(self.rotation_function, dt * 0.001, self.start_angle, self.time * 0.001)
         self.time = t
         self.start_position = y
-        self.start_angle = theta
+        self.start_angle = theta_p
         self.centroid = y[0]
         self.translational_speed = y[1]
-        self.rotate(theta[0] - self.angle)
-        self.angle = theta[0]
-        self.rotational_speed = theta[1]
-
-        print self.translational_forces
+        print(theta_p)
+        self.rotate(theta_p[0] - self.angle)
+        self.angle = theta_p[0]
+        self.rotational_speed = theta_p[1]
 
         #self.add_force(np.array([np.array([10000.,0.]),np.array([0.,1324.])]))
         self.clear_forces()
