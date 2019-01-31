@@ -7,6 +7,8 @@ FPS = 60
 MAX_FRAME_TIME = 6 * 1000 / FPS
 RUN = True
 KEY_FORCE = 1000
+FRICTION = 3
+ROTATION_FRICTION = 300
 
 
 class ShapeType(enum):

@@ -2,11 +2,10 @@ import math
 import pygame
 import numpy as np
 from runge_kutta import runge_kutta_4
+import globals
 
 
 class Polygon:
-    C = 3.
-    RC = 300.
 
     def __init__(self, centroid, radius, degree, mass, color=(255, 0, 0)):
         # Basic attributes
@@ -59,14 +58,14 @@ class Polygon:
         force = np.array([0, 0])
         for f in self.translational_forces:
             force = force + f
-        return np.array([y[1], (force - self.C * y[1]) / self.mass])
+        return np.array([y[1], (force - globals.FRICTION * y[1]) / self.mass])
 
     # Calculates how much the polygon should rotate
     def rotation_function(self, t, y):
         torque = 0.#np.array([0, 0])
         for f in self.torques:
             torque = torque + f
-        return np.array([y[1], (torque - self.RC * y[1]) / self.moment_area])
+        return np.array([y[1], (torque - globals.ROTATION_FRICTION * y[1]) / self.moment_area])
 
     # Adds a force acting on the polygon and calculates torque and translational force
     def add_force(self, force, point):
