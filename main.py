@@ -13,28 +13,17 @@ from PyQt4.QtGui import QApplication
 import sys
 
 
-def update(time, poly, input):
-    input.update()
-    poly.update(time)
-    #for p in poly:
-    #    p.update(time)
-    pygame.display.update()
-
-
 def main():
     pygame.init()
     window = pygame.display.set_mode((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
     input = Inputs()
-    globals.RUN = True
     clock = pygame.time.Clock()
     app = QApplication(sys.argv)
     param_win = Window()
     param_win.show()
 
-    polygon = Polygon(np.array([800, 500]), 100, 3, 10.)
-    #second =
-    #polygon.rotate(np.pi / 4)
-    #second.rotate(np.pi / 4)
+    polygon = Polygon(np.array([800, 500]), 100, 3, 10., (255, 255, 255))
+
     space = Space(polygon)
     while globals.RUN:
 
@@ -81,16 +70,10 @@ def main():
 
         clock.tick(globals.FPS)
         elapsed_time = clock.get_time()
-        space.update(window)
-        # collision = check_shapes_collision(polygon, second)
-        # if collision is not None:
-        #     check_shapes_collision(polygon, second)
-        #     circle = Circle(collision[0], 3, 20, color=(0, 255, 0))
-        #     circle.draw(window)
+        space.update(window, elapsed_time)
+        input.update()
+        pygame.display.update()
 
-        #pygame.draw.line(window, (97, 44, 204), polygon.centroid, second.centroid)
-
-        update(elapsed_time, space.polygon, input)
     sys.exit(app.exec_())
 
 
