@@ -30,7 +30,7 @@ class Polygon:
         self.rotational_speed = 0.
         self.moment_area = (math.pi / 4.) * self.radius #jer je 2D telo, pa nema masu, korisceno za krug, jer poligon kako raste stepen, tezi krugu
 
-    def rotate_reference_vector(self, theta):
+    def rotate(self, theta):
         self.reference_vector = np.array(self.reference_vector * np.matrix(
             [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])).ravel()
 
@@ -43,14 +43,10 @@ class Polygon:
         theta = self.theta
         vertices = [self.centroid + self.reference_vector]
         for i in range(1, self.degree):
-            self.rotate_reference_vector(theta)
+            self.rotate(theta)
             vertices.append(self.centroid + self.reference_vector)
-        self.rotate_reference_vector(theta)
+        self.rotate(theta)
         return vertices
-
-    def rotate(self, theta):
-        self.reference_vector = self.reference_vector * np.matrix(
-            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
 
     def draw(self, win):
         vertices = self.vertices
@@ -114,7 +110,7 @@ class Polygon:
         self.start_angle = theta_p
         self.centroid = y[0]
         self.translational_speed = y[1]
-        print(theta_p)
+        #print(theta_p)
         self.rotate(theta_p[0] - self.angle)
         self.angle = theta_p[0]
         self.rotational_speed = theta_p[1]

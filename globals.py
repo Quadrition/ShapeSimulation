@@ -1,4 +1,4 @@
-# HERE BE LIONS
+from aenum import enum
 
 
 SCREEN_WIDTH = 1280
@@ -6,3 +6,15 @@ SCREEN_HEIGHT = 720
 FPS = 60
 MAX_FRAME_TIME = 6 * 1000 / FPS
 RUN = False
+KEY_FORCE = 1000
+
+
+class ShapeType(enum):
+    POLYGON = 0
+    CIRCLE = 1
+
+
+NEW_SHAPE_TYPE = ShapeType.POLYGON
+NEW_SHAPE_RADIUS = 20
+NEW_SHAPE_MASS = 10
+NEW_SHAPE_DEGREE = 3

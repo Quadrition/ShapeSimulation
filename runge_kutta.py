@@ -1,6 +1,3 @@
-from numpy import linspace
-
-
 # def runge_kutta_4_step(fun, h, y):
 #     K1 = fun([y[i] + h / 2 for i in range(len(y))])
 #     K2 = fun([y[i] + K1[i] * h / 2 for i in range(len(y))])
@@ -11,16 +8,18 @@ from numpy import linspace
 #     #K.append(t)
 #     return K
 #
-# # def runge_kutta_4(fun, time):
-# #     y = [1, 1]
-# #     final_y = [[], []]
-# #     # time = linspace(a, b, (b - a) / h)
-# #     for t in time:
-# #         y = [y[i] + runge_kutta_4_step(fun, 0.1, t, y)[i] for i in range(len(y))]
-# #         final_y[0].append(y[0])
-# #         final_y[1].append(y[1])
-# #     return final_y
-#### REDEFINISANO
+# def runge_kutta_4(fun, time):
+#     y = [1, 1]
+#     final_y = [[], []]
+#     # time = linspace(a, b, (b - a) / h)
+#     for t in time:
+#         y = [y[i] + runge_kutta_4_step(fun, 0.1, t, y)[i] for i in range(len(y))]
+#         final_y[0].append(y[0])
+#         final_y[1].append(y[1])
+#     return final_y
+# REDEFINISANO
+
+
 def runge_kutta_4(f, h, y0, t0):
     k1 = f(t0, y0)
     k2 = f(t0 + h * 0.5, y0 + h * 0.5 * k1)

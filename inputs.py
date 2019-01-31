@@ -1,58 +1,65 @@
 import pygame
 import globals
 
+
 class Inputs:
     def __init__(self):
-        self.movement_keys = [False, False, False, False] # left up right down
-        self.rotate_keys = [False, False]
+        self.movement_keys = [False, False, False, False]  # up right down left
+        self.mouse_pos = None
+        self.mouse_button = [False, False]  # left click, right click
 
-    def get_left(self):
+    def is_up(self):
         return self.movement_keys[0]
 
-    def get_right(self):
-        return self.movement_keys[2]
-
-    def get_down(self):
-        return self.movement_keys[3]
-
-    def get_up(self):
+    def is_right(self):
         return self.movement_keys[1]
 
-    def get_cw(self):
-        return self.rotate_keys[0]
+    def is_down(self):
+        return self.movement_keys[2]
+
+    def is_left(self):
+        return self.movement_keys[3]
+
+    def mouse_left_click(self):
+        return self.mouse_button[0]
+
+    def mouse_right_click(self):
+        return self.mouse_button[1]
 
     def update(self):
+        self.mouse_button = [False, False]
         for event in pygame.event.get():
-            # QUIT
+            # Quit app
             if event.type == pygame.QUIT:
                 globals.RUN = False
+            # Key pressed
             elif event.type == pygame.KEYDOWN:
-                # LEFT
-                if event.key == pygame.K_LEFT and self.movement_keys[0] == False :
+                # Up
+                if event.key == pygame.K_UP:
                     self.movement_keys[0] = True
-                # UP
-                if event.key == pygame.K_UP and self.movement_keys[1] == False :
+                # Right
+                if event.key == pygame.K_RIGHT:
                     self.movement_keys[1] = True
-                # RIGHT
-                if event.key == pygame.K_RIGHT and self.movement_keys[2] == False :
+                # Down
+                if event.key == pygame.K_DOWN:
                     self.movement_keys[2] = True
-                # DOWN
-                if event.key == pygame.K_DOWN and self.movement_keys[3] == False :
+                # Left
+                if event.key == pygame.K_LEFT:
                     self.movement_keys[3] = True
-                # ROTATE CW
-                if event.key == pygame.K_k and self.rotate_keys[0] == False:
-                    self.rotate_keys[0] = True
-
+            # Key released
             if event.type == pygame.KEYUP:
-                # LEFT
-                if event.key == pygame.K_LEFT and self.movement_keys[0] == True:
+                # UP
+                if event.key == pygame.K_UP:
                     self.movement_keys[0] = False
-                if event.key == pygame.K_UP and self.movement_keys[1] == True:
+                # RIGHT
+                if event.key == pygame.K_RIGHT:
                     self.movement_keys[1] = False
-                if event.key == pygame.K_RIGHT and self.movement_keys[2] == True:
+                # DOWN
+                if event.key == pygame.K_DOWN:
                     self.movement_keys[2] = False
-                if event.key == pygame.K_DOWN and self.movement_keys[3] == True:
+                # LEFT
+                if event.key == pygame.K_LEFT:
                     self.movement_keys[3] = False
-                # ROTATE CW
-                if event.key == pygame.K_k and self.rotate_keys[0] == True:
-                    self.rotate_keys[0] = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.mouse_pos = pygame.mouse.get_pos()
+                self.mouse_button = [bool(pygame.mouse.get_pressed()[0]), bool(pygame.mouse.get_pressed()[2])]
