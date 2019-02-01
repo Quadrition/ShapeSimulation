@@ -29,30 +29,6 @@ def main():
 
         space.draw(window)
 
-        # if result is not None:
-        #     e = 1.5
-        #     vab = polygon.translational_speed - second.translational_speed
-        #     rap = result - polygon.centroid
-        #     rap = np.array([-rap[1], rap[0]])
-        #     rbp = result - second.centroid
-        #     rbp = np.array([-rbp[1], rbp[0]])
-        #     ia = polygon.moment_area
-        #     ib = second.moment_area
-        #     a = np.dot(rap, mtv)
-        #     b = np.dot(rbp, mtv)
-        #
-        #     j = (-(1. + e) * vab * mtv) / (
-        #                 np.dot(mtv, mtv) * (1 / polygon.mass + 1 / second.mass))  # + pow(a,2) / ia + pow(b,2) / ib)
-        #     polygon.translational_speed = polygon.translational_speed + (j / polygon.mass) * mtv
-        #     second.translational_speed = second.translational_speed - (j / second.mass) * mtv
-        #     # polygon.rotational_speed = polygon.rotational_speed + (np.dot(rap, j*mtv)) / ia
-        #     # second.rotational_speed = second.rotational_speed - (np.dot(rbp, j*mtv)) / ib
-
-        #polygon.rotate_reference_vector(0)
-        #
-        #if input.get_cw():
-        #    polygon.add_force(np.array([-100., 1.]), polygon.reference_vector + polygon.centroid)
-
         if input.is_left():
             polygon.add_force(np.array([-globals.KEY_FORCE, 0.]), polygon.centroid)
         elif input.is_right():

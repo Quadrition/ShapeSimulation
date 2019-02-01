@@ -99,24 +99,21 @@ class Polygon:
 
 
     def move(self, dt):
-        self.start_position = np.array([self.centroid, self.translational_speed])
-        self.start_angle = np.array([self.angle, self.rotational_speed])
+        start_position = np.array([self.centroid, self.translational_speed])
+        start_angle = np.array([self.angle, self.rotational_speed])
         t = self.time * 0.001 + dt * 0.001
-        y = runge_kutta_4(self.movement_function, dt * 0.001, self.start_position, self.time * 0.001)
-        theta_p = runge_kutta_4(self.rotation_function, dt * 0.001, self.start_angle, self.time * 0.001)
+        y = runge_kutta_4(self.movement_function, dt * 0.001, start_position, self.time * 0.001)
+        theta_p = runge_kutta_4(self.rotation_function, dt * 0.001, start_angle, self.time * 0.001)
         self.time = t
-        self.start_position = y
-        self.start_angle = theta_p
+        # start_position = y
+        # start_angle = theta_p
         self.centroid = y[0]
         self.translational_speed = y[1]
-        #print(theta_p)
         self.rotate(theta_p[0] - self.angle)
         self.angle = theta_p[0]
         self.rotational_speed = theta_p[1]
 
-        #self.add_force(np.array([np.array([10000.,0.]),np.array([0.,1324.])]))
         self.clear_forces()
 
     def update(self, dt):
         self.move(dt)
-        #self.rotate(math.pi * dt * 0.001)
