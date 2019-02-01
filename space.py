@@ -53,7 +53,27 @@ class Space:
         for shape in self.shapes:
             result = check_shapes_collision(self.polygon, shape)
             if result is not None:
+                self.resolve_collision(self.polygon, shape, result[0], result[1])
                 pygame.draw.circle(window, (0, 255, 0), result[0].astype(int), 3)
+
+    # RESAVA SUDAR PREKO IMPULSA
+    def resolve_collision(self, first, second, collision_point, n):
+        e = 1.
+        r_ap = collision_point - first.centroid
+        r_bp = collision_point - second.centroid
+        r_ap_perpendicular = np.array([-r_ap[1], r_ap[0]])  # OVE DVE PROMENLJIVE
+        r_bp_perpendicular = np.array([-r_bp[1], r_bp[0]])  # NEMOJ JOS BRISATI
+        invm_a = 1. / first.mass
+        invm_b = 1. / second.mass
+        velocity_a = first.translational_speed  # + first.rotational_speed * r_ap_perpendicular # PROBAJ BEZ I SA ISKOMENTARISANIM
+        velocity_b = second.translational_speed  # + second.rotational_speed * r_bp_perpendicular # TAKODJE I OVDE
+        velocity = velocity_a - velocity_b
+        impulse_numerator = -(1. + e) * np.dot(velocity, n)
+        impulse_denominator = invm_a + invm_b
+        impulse = impulse_numerator / impulse_denominator
+
+        first.translational_speed = first.translational_speed + invm_a * impulse * n
+        second.translational_speed = second.translational_speed - invm_b * impulse * n
 
     # Ovde cemo za svaki shape uraditi odbijanje od ivice
     def check_borders(self):
