@@ -49,12 +49,15 @@ class Space:
             shape.draw(window)
 
     def update(self, window, time):
+        print self.polygon.translational_speed
         self.polygon.update(time)
         for shape in self.shapes:
+            shape.update(time)
             result = check_shapes_collision(self.polygon, shape)
             if result is not None:
                 self.resolve_collision(self.polygon, shape, result[0], result[1])
                 pygame.draw.circle(window, (0, 255, 0), result[0].astype(int), 3)
+
 
     # RESAVA SUDAR PREKO IMPULSA
     def resolve_collision(self, first, second, collision_point, n):
@@ -68,12 +71,21 @@ class Space:
         velocity_a = first.translational_speed  # + first.rotational_speed * r_ap_perpendicular # PROBAJ BEZ I SA ISKOMENTARISANIM
         velocity_b = second.translational_speed  # + second.rotational_speed * r_bp_perpendicular # TAKODJE I OVDE
         velocity = velocity_a - velocity_b
+        incercy_a = np.power(np.dot(r_ap_perpendicular, n), 2) / first.moment_area
+        incercy_b = np.power(np.dot(r_bp_perpendicular, n), 2) / second.moment_area
         impulse_numerator = -(1. + e) * np.dot(velocity, n)
-        impulse_denominator = invm_a + invm_b
+        impulse_denominator = ((invm_a + invm_b) * np.dot(n, n)) #+ incercy_a + incercy_b
         impulse = impulse_numerator / impulse_denominator
 
         first.translational_speed = first.translational_speed + invm_a * impulse * n
         second.translational_speed = second.translational_speed - invm_b * impulse * n
+
+        impulse_denominator = ((invm_a + invm_b) * np.dot(n, n)) + incercy_a + incercy_b
+        impulse = impulse_numerator / impulse_denominator
+
+        first.rotational_speed = first.rotational_speed - np.dot(r_ap_perpendicular, (impulse * n)) / first.moment_area
+        second.rotational_speed = second.rotational_speed + np.dot(r_bp_perpendicular, (impulse * n)) / second.moment_area
+        #first.
 
     # Ovde cemo za svaki shape uraditi odbijanje od ivice
     def check_borders(self):
