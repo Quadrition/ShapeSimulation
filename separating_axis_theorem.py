@@ -1,6 +1,7 @@
 import numpy as np
 from polygon import Polygon
 from circle import Circle
+import globals
 
 
 # Projects polygon on axis and returns maximum and minimum projection
@@ -99,6 +100,12 @@ def check_polygon_polygon_collision(first_polygon, second_polygon):
         min_axis = -min_axis
 
     contact_point = get_contact_point_polygon(first_polygon, second_polygon, min_axis)
+
+    second_max = np.dot(get_max_vertices(second_polygon, -min_axis)[0], -min_axis)
+    contact_max = np.dot(contact_point, -min_axis)
+    if second_max >= contact_max:
+        second_polygon.centroid += (second_max - contact_max if second_max - contact_max != 0 else 1) * min_axis
+
     return contact_point, min_axis
 
 
@@ -196,6 +203,14 @@ def check_polygon_circle_collision(polygon, circle):
             pp = points[1]
         else:
             pp = points[0] + (s1 / np.linalg.norm(s1)) * pr1
+
+        d2 = pp - circle.centroid
+        d2 = d2 / np.linalg.norm(d2)
+        pk = circle.centroid + d2 * circle.radius
+
+        if not np.array_equal(np.round(pk), np.round(pp)):
+            circle.centroid += min_axis * np.linalg.norm(pk - pp)
+
     # Project circle and polygon on axis from closes point on polygon to center of circle
     axis = circle.centroid - pp
     axis = axis / np.linalg.norm(axis)
@@ -206,7 +221,6 @@ def check_polygon_circle_collision(polygon, circle):
         return None
     elif minimum > overlap:
         min_axis = axis
-
     return pp, min_axis
 
 
@@ -221,6 +235,74 @@ def find_best_vertex(polygon, axis):
             max_vector = polygon.centroid + polygon.reference_vector
         polygon.rotate(polygon.theta)
     return max_vector
+
+
+def check_left_border(shape):
+    mtv = np.array([1, 0])
+    if isinstance(shape, Circle):
+        if (shape.centroid - mtv * shape.radius)[0] <= 0:
+            if (shape.centroid - mtv * shape.radius)[0] < 0:
+                shape.centroid[0] += 1
+            return shape.centroid - mtv * shape.radius, mtv
+    elif isinstance(shape, Polygon):
+        for vertex in shape.vertices:
+            dot = np.dot(vertex, mtv)
+            if dot <= 0:
+                if dot < 0:
+                    shape.centroid[0] += 1
+                return vertex, mtv
+    return None
+
+
+def check_right_border(shape):
+    mtv = np.array([-1, 0])
+    if isinstance(shape, Circle):
+        if (shape.centroid - mtv * shape.radius)[0] >= globals.SCREEN_WIDTH:
+            if (shape.centroid - mtv * shape.radius)[0] > globals.SCREEN_WIDTH:
+                shape.centroid[0] -= 1
+            return shape.centroid - mtv * shape.radius, mtv
+    elif isinstance(shape, Polygon):
+        for vertex in shape.vertices:
+            dot = np.dot(vertex, -mtv)
+            if dot >= globals.SCREEN_WIDTH:
+                if dot > globals.SCREEN_WIDTH:
+                    shape.centroid[0] -= 1
+                return vertex, mtv
+    return None
+
+
+def check_up_border(shape):
+    mtv = np.array([0, 1])
+    if isinstance(shape, Circle):
+        if (shape.centroid - mtv * shape.radius)[1] <= 0:
+            if (shape.centroid - mtv * shape.radius)[1] < 0:
+                shape.centroid[1] += 1
+            return shape.centroid - mtv * shape.radius, mtv
+    elif isinstance(shape, Polygon):
+        for vertex in shape.vertices:
+            dot = np.dot(vertex, mtv)
+            if dot <= 0:
+                if dot < 0:
+                    shape.centroid[1] += 1
+                return vertex, mtv
+    return None
+
+
+def check_down_border(shape):
+    mtv = np.array([0, -1])
+    if isinstance(shape, Circle):
+        if (shape.centroid - mtv * shape.radius)[1] >= globals.SCREEN_HEIGHT:
+            if (shape.centroid - mtv * shape.radius)[1] > globals.SCREEN_HEIGHT:
+                shape.centroid[1] -= 1
+            return shape.centroid - mtv * shape.radius, mtv
+    elif isinstance(shape, Polygon):
+        for vertex in shape.vertices:
+            dot = np.dot(vertex, -mtv)
+            if dot >= globals.SCREEN_HEIGHT:
+                if dot > globals.SCREEN_HEIGHT:
+                    shape.centroid[1] -= 1
+                return vertex, mtv
+    return None
 
 
 # Main function for shapes collision

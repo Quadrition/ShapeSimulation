@@ -17,7 +17,7 @@ class Polygon:
         self.time = pygame.time.get_ticks()
 
         # Physics
-        self.forces = np.array([np.array([0., 0.]), 0.])
+        #self.forces = np.array([np.array([0., 9.81]), 0.])
         self.mass = mass
 
         # Translation
@@ -26,8 +26,8 @@ class Polygon:
         # Rotation
         self.angle = 0.
         self.torques = np.array([0.])
-        self.rotational_speed = 0.
-        self.moment_area = (math.pi / 4.) * self.radius #jer je 2D telo, pa nema masu, korisceno za krug, jer poligon kako raste stepen, tezi krugu
+        self.rotational_speed = 5.
+        self.moment_area = (math.pi / 0.5) * self.radius #jer je 2D telo, pa nema masu, korisceno za krug, jer poligon kako raste stepen, tezi krugu
 
     def rotate(self, theta):
         self.reference_vector = np.array(self.reference_vector * np.matrix(
@@ -70,11 +70,11 @@ class Polygon:
     # Adds a force acting on the polygon and calculates torque and translational force
     def add_force(self, force, point):
         #f = force[0] + force[1]
-        if point is None:
-            self.torques = np.append(self.torques, 0.)
-            self.translational_forces = np.vstack([self.translational_forces, np.array([0., 0.])])
-            self.forces = np.vstack((self.forces, np.array([np.array([0., 0.]), 0.])))
-            return
+        # if point is None:
+        #     self.torques = np.append(self.torques, 0.)
+        #     self.translational_forces = np.vstack([self.translational_forces, np.array([0., 0.])])
+        #     self.forces = np.vstack((self.forces, np.array([np.array([0., 0.]), 0.])))
+        #     return
         f = force
         moment_arm = point - self.centroid
         f_parallel = ((moment_arm * (np.dot(f, moment_arm) / np.dot(moment_arm, moment_arm))) if np.dot(moment_arm, moment_arm) !=  0 else force)
@@ -83,7 +83,7 @@ class Polygon:
         torque = np.linalg.norm(moment_arm) * np.linalg.norm(f_angular) * math.sin(theta_p)
         self.torques = np.append(self.torques, torque)
         self.translational_forces = np.vstack([self.translational_forces, f_parallel])
-        self.forces = np.vstack((self.forces, np.array([f_parallel, torque])))
+        #self.forces = np.vstack((self.forces, np.array([f_parallel, torque])))
         #self.forces = np.concatenate((self.forces, force))
 
     # Clears all forces acting on the polygon
@@ -91,7 +91,7 @@ class Polygon:
         #self.forces = np.delete(self.forces, np.s_[2::], axis = 0)
         self.torques = np.array([0.])
         self.translational_forces = np.delete(self.translational_forces, np.s_[1::], axis = 0)
-        self.forces = np.array([np.array([0., 0.]), 0.])
+        #self.forces = np.array([np.array([0., 0.]), 0.])
 
     def get_forces(self):
         force = np.array([self.translational_speed, self.torques])
@@ -112,8 +112,10 @@ class Polygon:
         self.rotate(theta_p[0] - self.angle)
         self.angle = theta_p[0]
         self.rotational_speed = theta_p[1]
+        #print self.rotational_speed
 
         self.clear_forces()
 
     def update(self, dt):
         self.move(dt)
+
