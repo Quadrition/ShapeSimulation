@@ -3,6 +3,7 @@ from PyQt4.QtCore import QObject, SIGNAL
 import globals
 
 
+# Simple gui with editable parameters
 class Window(QWidget):
 
     def __init__(self):

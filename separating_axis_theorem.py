@@ -48,14 +48,10 @@ def get_polygon_axes(polygon):
 
 # Checks if projection overlaps, and returns overlap, otherwise -1
 def get_projection_overlap(first_projection, second_projection):
-    # Calculate center of projections
-    first_center = (first_projection[0] + first_projection[1]) / 2
-    second_center = (second_projection[0] + second_projection[1]) / 2
     # Checks if collision exists
-    if first_center < second_center and first_projection[0] < second_projection[1]:
+    if not (first_projection[1] <= second_projection[0] and first_projection[0] >= second_projection[1]):
         return -1
-    elif second_center < first_center and second_projection[0] < first_projection[1]:
-        return -1
+
     # Finds distance between largest minimum and smallest maximum
     if first_projection[0] < second_projection[0]:
         maximum = first_projection[0]
@@ -101,10 +97,11 @@ def check_polygon_polygon_collision(first_polygon, second_polygon):
 
     contact_point = get_contact_point_polygon(first_polygon, second_polygon, min_axis)
 
-    second_max = np.dot(get_max_vertices(second_polygon, -min_axis)[0], -min_axis)
+    # Move polygon if overlapping
+    maximum = np.dot(get_max_vertices(second_polygon, -min_axis)[0], -min_axis)
     contact_max = np.dot(contact_point, -min_axis)
-    if second_max >= contact_max:
-        second_polygon.centroid += (second_max - contact_max if second_max - contact_max != 0 else 1) * min_axis
+    if maximum >= contact_max:
+        second_polygon.centroid += (maximum - contact_max if maximum - contact_max != 0 else 1) * min_axis
 
     return contact_point, min_axis
 
@@ -163,6 +160,10 @@ def check_circle_circle_collision(first_circle, second_circle):
     if overlap == -1:
         return None
 
+    # Move circle if overlapping
+    if overlap > 0:
+        second_circle.centroid += mtv * overlap
+
     collision_point = first_circle.centroid + mtv * first_circle.radius
     return collision_point, mtv
 
@@ -204,6 +205,7 @@ def check_polygon_circle_collision(polygon, circle):
         else:
             pp = points[0] + (s1 / np.linalg.norm(s1)) * pr1
 
+        # Move circle if overlapping
         d2 = pp - circle.centroid
         d2 = d2 / np.linalg.norm(d2)
         pk = circle.centroid + d2 * circle.radius
@@ -237,8 +239,25 @@ def find_best_vertex(polygon, axis):
     return max_vector
 
 
+# Checks if shape is in collision with border
+def check_border(shape):
+    result = check_up_border(shape)
+    if result is None:
+        result = check_left_border(shape)
+    if result is None:
+        result = check_down_border(shape)
+    if result is None:
+        result = check_right_border(shape)
+    if result is None:
+        return None
+    return result
+
+
+# Checks if shape is in collision with left border
 def check_left_border(shape):
     mtv = np.array([1, 0])
+    if (shape.centroid - mtv * shape.radius)[0] > 0:
+        return None
     if isinstance(shape, Circle):
         if (shape.centroid - mtv * shape.radius)[0] <= 0:
             if (shape.centroid - mtv * shape.radius)[0] < 0:
@@ -254,8 +273,11 @@ def check_left_border(shape):
     return None
 
 
+# Checks if shape is in collision with right border
 def check_right_border(shape):
     mtv = np.array([-1, 0])
+    if (shape.centroid - mtv * shape.radius)[0] < globals.SCREEN_WIDTH:
+        return None
     if isinstance(shape, Circle):
         if (shape.centroid - mtv * shape.radius)[0] >= globals.SCREEN_WIDTH:
             if (shape.centroid - mtv * shape.radius)[0] > globals.SCREEN_WIDTH:
@@ -271,8 +293,11 @@ def check_right_border(shape):
     return None
 
 
+# Checks if shape is in collision with up border
 def check_up_border(shape):
     mtv = np.array([0, 1])
+    if (shape.centroid - mtv * shape.radius)[1] > 0:
+        return None
     if isinstance(shape, Circle):
         if (shape.centroid - mtv * shape.radius)[1] <= 0:
             if (shape.centroid - mtv * shape.radius)[1] < 0:
@@ -288,8 +313,11 @@ def check_up_border(shape):
     return None
 
 
+# Checks if shape is in collision with down border
 def check_down_border(shape):
     mtv = np.array([0, -1])
+    if (shape.centroid - mtv * shape.radius)[1] < globals.SCREEN_HEIGHT:
+        return None
     if isinstance(shape, Circle):
         if (shape.centroid - mtv * shape.radius)[1] >= globals.SCREEN_HEIGHT:
             if (shape.centroid - mtv * shape.radius)[1] > globals.SCREEN_HEIGHT:

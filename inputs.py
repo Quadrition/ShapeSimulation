@@ -7,12 +7,16 @@ class Inputs:
         self.movement_keys = [False, False, False, False]  # up right down left
         self.mouse_pos = None
         self.mouse_button = [False, False]  # left click, right click
+        self.clear = False
 
     def is_up(self):
         return self.movement_keys[0]
 
     def is_right(self):
         return self.movement_keys[1]
+
+    def is_clear(self):
+        return self.clear
 
     def is_down(self):
         return self.movement_keys[2]
@@ -28,6 +32,7 @@ class Inputs:
 
     def update(self):
         self.mouse_button = [False, False]
+        self.clear = False
         for event in pygame.event.get():
             # Quit app
             if event.type == pygame.QUIT:
@@ -46,6 +51,8 @@ class Inputs:
                 # Left
                 if event.key == pygame.K_LEFT:
                     self.movement_keys[3] = True
+                if event.key == pygame.K_c:
+                    self.clear = True
             # Key released
             if event.type == pygame.KEYUP:
                 # UP
